@@ -1,0 +1,97 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.dao.UserMapper">
+    <!--一对多查询: 查询所有用户,以及同时查询该用户所拥有的订单-->
+    <resultMap id="userMap" type="user">
+        <id property="id" column="uid"></id>
+        <result property="username" column="username"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="sex" column="sex"></result>
+        <result property="address" column="address"></result>
+
+        <!--一对多关系中: 多的一方的数据封装使用collection标签
+            property:封装到集合中的属性名
+            ofType:封装集合中元素的类型
+        -->
+        <collection property="ordersList" ofType="orders">
+            <id property="id" column="oid"></id>
+            <result property="ordertime" column="ordertime"></result>
+            <result property="total" column="total"></result>
+            <result property="uid" column="uid"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findAllUser" resultMap="userMap">
+        select u.*, o.id oid, o.ordertime, o.total, o.uid
+        from orders o right join user u on u.id = o.uid;
+    </select>
+
+
+    <!--多对多-->
+    <resultMap id="userRoleMap" type="user">
+        <id property="id" column="uid"></id>
+        <result property="username" column="username"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="sex" column="sex"></result>
+        <result property="address" column="address"></result>
+
+        <collection property="roleList" ofType="role">
+            <id property="id" column="rid"></id>
+            <result column="rolename" property="rolename"></result>
+            <result column="roleDesc" property="roleDesc"></result>
+        </collection>
+    </resultMap>
+
+    <select id="findAllRole" resultMap="userRoleMap">
+        select u.*, r.id rid, r.rolename, r.roleDesc
+        from user u left join sys_user_role ur
+        on u.id = ur.userid
+        left join sys_role r
+        on r.id = ur.roleid
+    </select>
+
+
+    <!--一对一嵌套查询：查询订单uid对应的用户user-->
+
+    <select id="findById" parameterType="int" resultType="user">
+        select * from user where id = #{id}
+    </select>
+
+    <!--一对多嵌套查询-->
+    <resultMap id="userMap2" type="user">
+        <id property="id" column="id"></id>
+        <result property="username" column="username"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="sex" column="sex"></result>
+        <result property="address" column="address"></result>
+
+        <!-- 进行两条sql语句的拼接
+            fetchType:表示设置加载策略
+                etchType="eager":立即加载策略
+                fetchType="lazy":延时加载策略
+
+            局部加载和全局加载: 局部加载优于全局加载
+        -->
+        <collection property="ordersList" ofType="order"
+                    select="com.star.dao.OrderMapper.findByUid" column="id"
+                    fetchType="lazy">
+        </collection>
+    </resultMap>
+
+    <select id="findAllUsers" resultMap="userMap2">
+        select * from user
+    </select>
+
+    <!--多对多嵌套查询-->
+    <select id="findAllRole2" resultMap="userMap3">
+        select * from user
+    </select>
+
+    <resultMap id="userMap3" type="user">
+        <id property="id" column="id"></id>
+        <collection property="roleList" ofType="role"
+                    select="com.star.dao.RoleMapper.selectByUid" column="id">
+        </collection>
+    </resultMap>
+</mapper>

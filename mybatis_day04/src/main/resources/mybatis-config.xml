@@ -1,0 +1,36 @@
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--引入 jdbc.properties配置文件 外部文件 - 动态配置连接池数据-->
+    <properties resource="config.properties"/>
+    
+    <settings>
+<!--        <setting name="logImpl" value="log4j"/>-->
+        <setting name="lazyLoadTriggerMethods" value="toString()"/>
+    </settings>
+
+    <typeAliases>
+        <package name="com.star.bean"/>
+    </typeAliases>
+
+    <!--配置数据库信息-->
+    <environments default="deployment">
+        <environment id="deployment">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+<!--        <mapper resource="com.star.mapper/OrderMapper.xml"></mapper>-->
+<!--        <mapper resource="com.star.mapper/UserMapper.xml"></mapper>-->
+<!--        <mapper resource="com.star.mapper/RoleMapper.xml"></mapper>-->
+        <package name="com.star.mapper"/>
+    </mappers>
+</configuration>

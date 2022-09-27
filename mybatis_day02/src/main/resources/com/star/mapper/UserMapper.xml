@@ -1,0 +1,158 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.com.star.UserMapper">
+    <sql id="selectUser">
+        select * from user
+    </sql>
+
+    <!--封装表中字段和实体类属性不一致的情况
+        resultMap: 手动配置实体类中属性和表中字段信息的标签
+    -->
+    <resultMap id="resultMapUser" type="resultMapUser">
+        <!--手动配置映射关系-->
+        <!--id标签: 用来配置主键
+              property: user实体类的属性名
+              column: 表中的字段名
+         -->
+        <id property="id" column="id"/>
+        <!--result标签: 用来配置表中的普通字段
+        -->
+        <result property="rm_name" column="name"/>
+        <result property="rm_age" column="age"/>
+    </resultMap>
+    <select id="findResultMapUser" parameterType="int" resultMap="resultMapUser">
+        select * from user where id = #{id}
+    </select>
+
+    <select id="findUser" parameterType="String" resultType="user">
+        select * from user where name = #{rm_name}
+    </select>
+    <!--多条件查询方式一: 情况一
+        情况一:使用arg
+            arg0: 表示方法中第一个参数,下标从0开始
+            arg1: 表示方法中第二个参数
+
+        情况二:使用param
+            param1: 表示方法中第一个参数,下标从1开始
+            param2: 表示方法中第二个参数
+    -->
+
+    <!--方式一：-->
+    <select id="findByIdAndName1" resultMap="resultMapUser">
+        <!--①：{arg0} {arg1} ...-->
+        select * from user where id = #{arg0} and name = #{arg1}
+    </select>
+    <select id="findByIdAndName2" resultType="user">
+        <!--②：{param1} {param2} ...-->
+        select * from user where id = #{param1} and name = #{param2}
+    </select>
+
+    <!--方式二：使用注解，引入 @Param()注解获取参数-->
+    <select id="findByIdAndName3" resultType="user">
+        select * from user where id = #{id} and name = #{name}
+    </select>
+
+    <!--方式三：使用pojo传递参数-->
+    <select id="findByIdAndName4" parameterType="user" resultType="user">
+        select * from user where id = #{id} and name = #{name}
+    </select>
+    
+    <!--模糊查询方式一:
+        #{}:在mybatis中表示占位符,使用时会自动拼接模糊查询中 ''
+    -->
+    <select id="findByName1" parameterType="string" resultMap="resultMapUser">
+        select * from user where name like #{name}
+    </select>
+
+    <!--模糊查询方式二:(不推荐使用)
+        不推荐使用的原因: 因为会出现sql注入问题
+        ${}:
+        parameterType类型: 如果是基本数据类型 或者String类型,
+        ${}的值只能写value,否则编译报错
+        ${}:sql原样拼接,需要手动添加'',否则编译报错
+    -->
+    <select id="findByName2" parameterType="string" resultMap="resultMapUser">
+        select * from user where name like '${value}'
+    </select>
+
+    <select id="findByIdOrName" parameterType="user" resultType="user">
+        select * from user
+        <where>
+            <if test="id != 0">
+                and id = #{id}
+            </if>
+            <if test="name != null">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" parameterType="int" resultType="user">
+        select * from user
+        <where>
+            <foreach collection="list"
+                     open="id in (" separator="," close=")"
+                     item="id">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findById02" parameterType="int" resultType="user">
+        <include refid="selectUser"/>
+        <where>
+            <foreach collection="array"
+                     open="id in (" separator="," close=")"
+                     item="id">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findAllResultMap" resultType="user">
+        <include refid="selectUser"/>
+    </select>
+
+
+
+    <!--<insert id="insert" parameterType="user"
+        useGeneratedKeys="true" keyProperty="id">
+        insert into user(name,age) values(#{name},#{age})
+    </insert>-->
+
+
+    <!--
+    <selectKey> 使用范围光，支持所有类型数据的返回主键
+        keyColumn：主键列名
+        keyProperty：主键封装到实体类的id
+        resultType：指定主键的类型
+        order：要执行的sql语句 设置在插入语句之前还是之后
+    -->
+    <insert id="insert" parameterType="user">
+        <selectKey keyColumn="id" keyProperty="id"
+            resultType="int" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into user(name,age) values(#{name},#{age})
+    </insert>
+
+    <delete id="delete" >
+        delete from user where name = #{name} and age = #{age}
+    </delete>
+    <update id="update" parameterType="user">
+        update user
+        <set>
+            <if test="id != 0">
+                id = #{id},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="age != 0">
+                age = #{age},
+            </if>
+        </set>
+        where id = 0;
+    </update>
+</mapper>

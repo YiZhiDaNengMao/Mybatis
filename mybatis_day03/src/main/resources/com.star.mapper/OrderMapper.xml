@@ -1,0 +1,59 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.star.dao.OrderMapper">
+    <!--一对一-->
+    <resultMap id="ordersMap" type="orders">
+        <id property="id" column="id"></id>
+        <result property="ordertime" column="ordertime"></result>
+        <result property="total" column="total"></result>
+        <result property="uid" column="uid"></result>
+
+        <!--一对一(多对一): 使用association标签进行表关联
+            property:表示要封装的属性名
+            javaType:表示要封装的实体属性的类型
+        -->
+        <association property="user" javaType="user">
+            <id property="id" column="uid"></id>
+            <result property="username" column="username"></result>
+            <result property="birthday" column="birthday"></result>
+            <result property="sex" column="sex"></result>
+            <result property="address" column="address"></result>
+        </association>
+    </resultMap>
+
+    <select id="findAllOrders" resultMap="ordersMap">
+        select * from orders o left join user u on o.uid = u.id
+    </select>
+
+    <!--嵌套查询：查询订单uid对应的用户user-->
+    <resultMap id="orderMap" type="orders">
+        <id property="id" column="id"></id>
+        <result property="ordertime" column="ordertime"></result>
+        <result property="total" column="total"></result>
+        <result property="uid" column="uid"></result>
+
+        <association property="user" javaType="user"
+                     select="com.star.dao.UserMapper.findById" column="uid">
+        </association>
+    </resultMap>
+
+    <select id="findAllOrder" resultMap="orderMap" >
+        select * from orders
+    </select>
+
+
+    <!--一对多嵌套查询：根据user 的id查询订单-->
+    <resultMap id="orderMap2" type="orders">
+        <id property="id" column="id"></id>
+        <result property="ordertime" column="ordertime"></result>
+        <result property="total" column="total"></result>
+        <result property="uid" column="uid"></result>
+    </resultMap>
+
+    <select id="findByUid" resultMap="orderMap2">
+        select * from orders where uid = #{id}
+    </select>
+
+
+</mapper>

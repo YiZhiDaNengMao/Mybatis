@@ -1,0 +1,39 @@
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="config.properties">
+        <property name="username" value="root"/>
+        <property name="password" value="jiang"/>
+    </properties>
+<!--    <settings>-->
+<!--        <setting name="logImpl" value="log4j"/>-->
+<!--    </settings>-->
+    <typeAliases>
+        <!--<typeAlias type="com.star.bean.ResultMapUser" alias="user"/>-->
+        <package name="com.star.bean"/>
+    </typeAliases>
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageHelper">
+            <property name="dialect" value="mysql"/>
+        </plugin>
+    </plugins>
+    <environments default="deployment">
+        <environment id="deployment">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <!--使用配置文件配置-->
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+
+                <!--使用property标签配置-->
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com/star/mapper/UserMapper.xml"></mapper>
+<!--        <package name="com.star.mapper"/>-->
+    </mappers>
+</configuration>
